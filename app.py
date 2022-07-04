@@ -17,6 +17,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+
+
+# creating the organization model
+
 class Organizations(db.Model):
     __tablename__ = "organizations"
     org_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -40,6 +44,11 @@ class OrganizationsSchema(ma.Schema):
 
 organization_schema = OrganizationsSchema()
 organizations_schema = OrganizationsSchema(many=True)
+
+
+
+
+# creating the user model
 
 class AppUsers(db.Model):
   __tablename__= "users"
@@ -78,6 +87,9 @@ users_schema = AppUsersSchema(many=True)
 
 
 
+
+# add an organization
+
 @app.route('/organization/add', methods=['POST'])
 def add_org():
   form = request.form
@@ -105,11 +117,20 @@ def add_org():
   
   return jsonify('Org Added'), 200
 
+
+
+
+#  get a list of organizations
 @app.route('/organization/list', methods=['GET'])
 def get_all_organizations():
    org_records = db.session.query(Organizations).all()
 
    return jsonify(organizations_schema.dump(org_records)), 200
+
+
+
+
+# create all function 
 
 def create_all():
   db.create_all()
@@ -144,6 +165,9 @@ def create_all():
     print("Super Admin user found!")
 
 
+
+#  add an user
+
 @app.route('/user/add', methods=['POST'])
 def add_user():
   form = request.form
@@ -176,6 +200,7 @@ def add_user():
   return jsonify('User Added'), 200
 
 
+# activate an user
 @app.route('/user/activate/<user_id>', methods=['PUT'])
 def activate_user(user_id):
   user_record = db.session.query(AppUsers).filter(AppUsers.user_id == user_id).first()
@@ -187,18 +212,27 @@ def activate_user(user_id):
 
   return jsonify("User Activated"), 201
 
+
+
+# get all users
 @app.route('/user/list', methods=['GET'])
 def get_all_users():
    user_records = db.session.query(AppUsers).all()
 
    return jsonify(users_schema.dump(user_records)), 200
 
+
+
+# get user by its ID
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_by_id(user_id):
    user_record = db.session.query(AppUsers).filter(AppUsers.user_id==user_id).first()
 
    return jsonify(user_schema.dump(user_record)),200
 
+
+
+# search
 @app.route('/search/<search_term>', methods=['GET'])
 def get_records_by_search(search_term):
    user_results = []
@@ -228,6 +262,7 @@ def get_records_by_search(search_term):
 #   # return jsonify("User Activated"), 201
 
 
+# edit user
 @app.route('/user/edit/<user_id>', methods=['PUT'])
 def edit_user(user_id, first_name = None, last_name = None, email = None, password = None, city= None, state = None, active = None):
   user_record = db.session.query(AppUsers).filter(AppUsers.user_id == user_id).first()
